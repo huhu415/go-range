@@ -3,15 +3,9 @@ package gorange
 import (
 	"reflect"
 	"testing"
-
-	"github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestExtractRange(t *testing.T) {
-	assert := assert.New(t)
-	logrus.SetLevel(logrus.DebugLevel)
-
 	tests := []struct {
 		name     string
 		input    string
@@ -83,8 +77,10 @@ func TestExtractRange(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := ExtractRange(tt.input)
-			assert.Equal(tt.wantErr, err != nil, "ExtractRange() error = %v, wantErr %v", err, tt.wantErr)
-
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ExtractRange() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 			if !reflect.DeepEqual(got, tt.expected) {
 				t.Errorf("ExtractRange() = %v, want %v", got, tt.expected)
 			}
@@ -94,9 +90,6 @@ func TestExtractRange(t *testing.T) {
 
 // 测试边界情况
 func TestExtractRangeEdgeCases(t *testing.T) {
-	assert := assert.New(t)
-	logrus.SetLevel(logrus.DebugLevel)
-
 	tests := []struct {
 		name     string
 		input    string
@@ -122,6 +115,18 @@ func TestExtractRangeEdgeCases(t *testing.T) {
 			wantErr:  false,
 		},
 		{
+			name:     "噪声数据",
+			input:    "xxx3-1xxx, xjlkjfd13slsv-sdf",
+			expected: []int{1, 2, 3, 13},
+			wantErr:  false,
+		},
+		{
+			name:     "多余的横杠",
+			input:    " 1----   3  ，5 ",
+			expected: []int{1, 2, 3, 5},
+			wantErr:  false,
+		},
+		{
 			name:     "只有分隔符",
 			input:    ",,,,",
 			expected: []int{},
@@ -132,8 +137,10 @@ func TestExtractRangeEdgeCases(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := ExtractRange(tt.input)
-			assert.Equal(tt.wantErr, err != nil, "ExtractRange() error = %v, wantErr %v", err, tt.wantErr)
-
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ExtractRange() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 			if !reflect.DeepEqual(got, tt.expected) {
 				t.Errorf("ExtractRange() = %v, want %v", got, tt.expected)
 			}

@@ -16,14 +16,18 @@ A Go library for parsing number ranges from strings with flexible format support
 ```go
 package main
 
-import "github.com/huhu415/gorange"
+import (
+	"fmt"
+
+	"github.com/huhu415/gorange"
+)
 
 func main() {
-    numbers, err := gorange.ExtractRange("1-3,5,7-9")
-    if err != nil {
-        panic(err)
-    }
-    fmt.Println(numbers) // Output: [1 2 3 5 7 8 9]
+	numbers, err := gorange.ExtractRange("1-3,5,7-9")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(numbers) // Output: [1 2 3 5 7 8 9]
 }
 ```
 
@@ -35,36 +39,14 @@ func main() {
 "1,2,3" => [1,2,3]
 
 // Ignore noise
-"xxx1-3xxx" => [1,2,3]
+"xxx3-1xxx, xjlkjfd13slsv-sdf" => [1,2,3,13]
 
-// Handle extra separators
-"1,,2,,,3" => [1,2,3]
+// Handle extra separators and Handle spaces
+"1,,2,,,   3  " => [1,2,3]
 
-// Handle extra dashes
-"1----3" => [1,2,3]
-
-// Handle spaces
-"  1  -  3  " => [1,2,3]
+// Handle extra dashes, and Support Chinese comma
+"   1----   3  ，5 " => [1,2,3]
 
 // Handle empty input
 "" => []
-
-// Auto-sort range
-"3-1" => [1,2,3]
-
-// Support Chinese comma
-"1，3-5，7" => [1,3,4,5,7]
 ```
-
-## API
-
-### func ExtractRange(input string) ([]int, error)
-
-ExtractRange parses number ranges from a string and returns a slice of integers.
-
-Parameters:
-- `input`: A string containing numbers and ranges
-
-Returns:
-- `[]int`: Slice containing all extracted numbers
-- `error`: Parsing errors (currently always returns nil)

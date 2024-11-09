@@ -1,11 +1,10 @@
 package gorange
 
 import (
+	"log"
 	"regexp"
 	"strconv"
 	"strings"
-
-	"github.com/sirupsen/logrus"
 )
 
 // ExtractRange parses number ranges from string, supporting both single numbers and range notation
@@ -40,21 +39,22 @@ func ExtractRange(input string) ([]int, error) {
 		segment = strings.TrimSpace(segment)
 
 		// range
-		if strings.Contains(segment, "-") {
-			pattern := `(\d+)[^\d]*-[^\d]*(\d+)`
-			matchWeekRange := regexp.MustCompile(pattern).FindStringSubmatch(segment)
+		pattern := `(\d+)[^\d]*-[^\d]*(\d+)`
+		reRange := regexp.MustCompile(pattern)
+		if reRange.MatchString(segment) {
+			matchWeekRange := reRange.FindStringSubmatch(segment)
 			if len(matchWeekRange) != 3 {
-				logrus.Warnf("Unable to match week range, %s", segment)
+				log.Printf("Unable to match week range, %s", segment)
 				continue
 			}
 			start, err := strconv.Atoi(matchWeekRange[1])
 			if err != nil {
-				logrus.Warnf("Unable to Atoi, format: %s, err: %v", matchWeekRange[1], err)
+				log.Printf("Unable to Atoi, format: %s, err: %v", matchWeekRange[1], err)
 				continue
 			}
 			end, err := strconv.Atoi(matchWeekRange[2])
 			if err != nil {
-				logrus.Warnf("Unable to Atoi, format: %s, err: %v", matchWeekRange[2], err)
+				log.Printf("Unable to Atoi, format: %s, err: %v", matchWeekRange[2], err)
 				continue
 			}
 			start, end = min(start, end), max(start, end)
@@ -69,12 +69,12 @@ func ExtractRange(input string) ([]int, error) {
 			pattern := `[^\d]*(\d+)[^\d]*`
 			matchWeekSingle := regexp.MustCompile(pattern).FindStringSubmatch(segment)
 			if len(matchWeekSingle) != 2 {
-				logrus.Warnf("Unable to find num, %s", segment)
+				log.Printf("Unable to find num, %s", segment)
 				continue
 			}
 			atoi, err := strconv.Atoi(matchWeekSingle[1])
 			if err != nil {
-				logrus.Warnf("Unable to Atoi, format: %s, err: %v", matchWeekSingle[2], err)
+				log.Printf("Unable to Atoi, format: %s, err: %v", matchWeekSingle[2], err)
 				continue
 			}
 			result = append(result, atoi)
