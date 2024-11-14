@@ -11,6 +11,8 @@ A Go library for parsing number ranges from strings with flexible format support
 - Auto-sort range numbers
 - Flexible format support
 
+> Negative numbers are not supported
+
 ## Usage
 
 ```go
@@ -23,11 +25,20 @@ import (
 )
 
 func main() {
-	numbers, err := gorange.ExtractRange("1-3,5,7-9")
+	// These two calls are equivalent:
+	numbers, err := gorange.ExtractRange("1-3,5,7-9", gorange.DefaultProcessRange)
+	// numbers, err := gorange.ExtractRange("1-3,5,7-9")
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println(numbers) // Output: [1 2 3 5 7 8 9]
+
+	// Support custom analysis of single week(chinese 单)
+	numbers, err = gorange.ExtractRange("1-3单周", gorange.SingleDoubleWeekProcess)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(numbers) // Output: [1 3]
 }
 ```
 
