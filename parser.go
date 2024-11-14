@@ -17,12 +17,15 @@ import (
 //   - Handle empty input: "" => []
 //   - Handle range order: "3-1" => [1,2,3]
 //   - Handle Chinese comma: "1，3-5，7" => [1,3,4,5,7]
+//   - Handle 单双周: "1-15单周" => [1,3,5,7,9,11,13,15]
+//
+// !!!! Negative numbers are not supported
 //
 // Returns:
 //
 //	[]int: Slice containing all extracted numbers
 //	error: Parsing errors (currently always returns nil)
-func ExtractRange(input string) ([]int, error) {
+func ExtractRange(input string, processRange ...func(rangeStr string, begin, end int) []int) ([]int, error) {
 	// Chinese:'，' to English:','
 	input = strings.ReplaceAll(input, "，", ",")
 
@@ -58,9 +61,15 @@ func ExtractRange(input string) ([]int, error) {
 				continue
 			}
 			start, end = min(start, end), max(start, end)
-			for i := start; i <= end; i++ {
-				result = append(result, i)
+
+			var tempRange []int
+			if len(processRange) > 0 {
+				tempRange = processRange[0](segment, start, end)
+			} else {
+				tempRange = DefaultProcessRange(segment, start, end)
 			}
+
+			result = append(result, tempRange...)
 			continue
 		}
 
@@ -81,4 +90,36 @@ func ExtractRange(input string) ([]int, error) {
 		}
 	}
 	return result, nil
+}
+
+func DefaultProcessRange(rangeStr string, begin, end int) []int {
+	result := make([]int, 0, end-begin+1)
+	for i := begin; i <= end; i++ {
+		result = append(result, i)
+	}
+	return result
+}
+
+// 单双周处理
+// 1-3单 => 1,3
+func SingleDoubleWeekProcess(rangeStr string, begin, end int) []int {
+	evenOrOdd := 999
+	switch {
+	case strings.Contains(rangeStr, "单"):
+		evenOrOdd = 1
+	case strings.Contains(rangeStr, "双"):
+		evenOrOdd = 0
+	}
+
+	if evenOrOdd == 999 {
+		return DefaultProcessRange(rangeStr, begin, end)
+	}
+
+	result := make([]int, 0, (end-begin+1)/2)
+	for i := begin; i <= end; i++ {
+		if i%2 == evenOrOdd {
+			result = append(result, i)
+		}
+	}
+	return result
 }

@@ -147,3 +147,36 @@ func TestExtractRangeEdgeCases(t *testing.T) {
 		})
 	}
 }
+
+func TestSingleDoubleWeek(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected []int
+		wantErr  bool
+	}{
+		{
+			name:     "单双周",
+			input:    "3-10周单周, 15",
+			expected: []int{3, 5, 7, 9, 15},
+		},
+		{
+			name:     "单双周混合",
+			input:    "3-8周单周, 15, 6-4周双周",
+			expected: []int{3, 5, 7, 15, 4, 6},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ExtractRange(tt.input, SingleDoubleWeekProcess)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ExtractRange() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.expected) {
+				t.Errorf("ExtractRange() = %v, want %v", got, tt.expected)
+			}
+		})
+	}
+}
